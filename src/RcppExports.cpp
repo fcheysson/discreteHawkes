@@ -6,17 +6,3 @@
 
 using namespace Rcpp;
 
-// gammaf1
-double gammaf1(double xi, double binSize, arma::vec param, int maxIndex);
-RcppExport SEXP discreteHawkes_gammaf1(SEXP xiSEXP, SEXP binSizeSEXP, SEXP paramSEXP, SEXP maxIndexSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double >::type xi(xiSEXP);
-    Rcpp::traits::input_parameter< double >::type binSize(binSizeSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type param(paramSEXP);
-    Rcpp::traits::input_parameter< int >::type maxIndex(maxIndexSEXP);
-    rcpp_result_gen = Rcpp::wrap(gammaf1(xi, binSize, param, maxIndex));
-    return rcpp_result_gen;
-END_RCPP
-}

@@ -89,52 +89,19 @@ RCPP_MODULE(MyModule) {
   using namespace Rcpp;
 
   class_<Hawkes>("Hawkes")
-    .constructor<double>() // This exposes the default constructor
+	.constructor<double>() // This exposes the default constructor
 	.constructor<arma::vec, double>()
 	.method("gammaf", &Hawkes::gammaf)
 	.method("gammaf1", &Hawkes::gammaf1)
 	.method("fft", &Hawkes::fft)
 	.property("param", &Hawkes::getParam, &Hawkes::setParam)
-//	.method("setParam", &Hawkes::setParam)
-//	.method("getParam", &Hawkes::getParam)
   ;
   class_<ExpHawkes>("ExpHawkes")
-    .derives<Hawkes>("Hawkes")
-    .constructor<double>() // This exposes the default constructor
+	.derives<Hawkes>("Hawkes")
+	.constructor<double>() // This exposes the default constructor
 	.constructor<arma::vec, double>()
 	.method("h", &ExpHawkes::h)
-    .method("H", &ExpHawkes::H) // This exposes the H method
+	.method("H", &ExpHawkes::H) // This exposes the H method
   ;
 
-}
-
-double sinc(double x);
-arma::cx_double H(double xi, arma::vec param);
-double gammaf(double xi, double binSize, arma::vec param);
-
-// [[Rcpp::export]]
-double gammaf1(double xi, double binSize, arma::vec param, int maxIndex) {
-	double sum = 0;
-	for (int k = - maxIndex; k < maxIndex + 1; k++) {
-		sum += gammaf(xi + 2*k*arma::datum::pi, binSize, param);
-	}
-	return sum;
-}
-
-double gammaf(double xi, double binSize, arma::vec param) {
-	double m = param(0) / ( 1 - param(1) / param(2) );
-	double term1 = sinc(xi/2);
-	double term2 = 1 / std::norm( arma::cx_double(1.0, 0) - H(xi / binSize, param) );
-	return m * binSize * term1 * term1 * term2;
-}
-
-arma::cx_double H(double xi, arma::vec param) {
-	double factor = param(1) / ( param(2)*param(2) + xi*xi );
-	arma::cx_double result = arma::cx_double(factor * param(2), - factor * xi);
-	return result;
-}
-
-double sinc(double x) {
-	if (x == 0) return 1;
-	return sin(x) / x;
 }

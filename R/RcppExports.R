@@ -7,7 +7,3 @@ NULL
 #' @export ExpHawkes
 NULL
 
-gammaf1 <- function(xi, binSize, param, maxIndex) {
-    .Call('discreteHawkes_gammaf1', PACKAGE = 'discreteHawkes', xi, binSize, param, maxIndex)
-}
-
