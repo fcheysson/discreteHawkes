@@ -1,0 +1,4 @@
+useDynLib(discreteHawkes)
+export(ExpHawkes)
+export(Hawkes)
+export(exportRcppClass)
