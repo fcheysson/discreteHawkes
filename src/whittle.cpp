@@ -54,6 +54,18 @@ class Hawkes {
 			return sum;
 		};
 		
+		// Methods for likelihood
+		double wlik( arma::vec& I, int trunc ) {
+		  double lik = 0;
+		  double omega, spec;
+		  for (arma::uword k = 1; k < data.n_elem; k++) {
+		    omega = 2 * k * arma::datum::pi / data.n_elem;
+		    spec = gammaf1(omega, trunc);
+		    lik -= log(spec) + I(k) / spec;
+		  }
+		  return lik;
+		};
+		
 		// Get and set methods for param
 		void setParam( arma::vec param_ ) {
 			param = param_;
@@ -83,6 +95,24 @@ class ExpHawkes: public Hawkes {
 			arma::cx_double result = arma::cx_double(factor * param(2), - factor * xi);
 			return result;
 		};
+		
+		// Time-domain covariance functions
+		double var() {
+			double kappa = 1.0 / ( 1.0 - param(1) / param(2) );
+		  double kappa2 = kappa * kappa;
+			double gamma = param(2) - param(1);
+			return mean() * (binSize * kappa2 + (1 - kappa2) * (1 - exp(-binSize * gamma)) / gamma) ;
+		};
+		double cov( int tau ) {
+			if (tau == 0)
+				return var();
+			double gamma = param(1) - param(2);
+			double gamma2 = gamma * gamma;
+			double gamma4 = gamma2 * gamma2;
+			double expm1 = exp(gamma * binSize) - 1;
+			double expm12 = expm1 * expm1;
+			return .5 * param(0) * param(1) * param(2) * (2*param(2) - param(1)) * expm12 * exp(gamma * (tau - 1)) / gamma4;
+		};
 };
 
 RCPP_MODULE(MyModule) {
@@ -94,6 +124,7 @@ RCPP_MODULE(MyModule) {
 	.method("gammaf", &Hawkes::gammaf)
 	.method("gammaf1", &Hawkes::gammaf1)
 	.method("fft", &Hawkes::fft)
+  .method("wlik", &Hawkes::wlik)
 	.property("param", &Hawkes::getParam, &Hawkes::setParam)
   ;
   class_<ExpHawkes>("ExpHawkes")
@@ -102,6 +133,8 @@ RCPP_MODULE(MyModule) {
 	.constructor<arma::vec, double>()
 	.method("h", &ExpHawkes::h)
 	.method("H", &ExpHawkes::H) // This exposes the H method
+  .method("var", &ExpHawkes::var)
+  .method("cov", &ExpHawkes::cov)
   ;
 
 }

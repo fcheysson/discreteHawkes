@@ -4,10 +4,10 @@
 \alias{discrete}
 \title{discrete}
 \usage{
-discrete(data, T, length = NULL, binSize = NULL)
+discrete(hawkes, length = NULL, binSize = NULL)
 }
 \arguments{
-\item{data}{}
+\item{hawkes}{}
 
 \item{length}{}
 
