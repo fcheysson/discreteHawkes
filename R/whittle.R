@@ -57,14 +57,16 @@ whittle_cov <- function(data, binSize) {
   wlik <- function(param_) {
     param <- param_
     param[2] <- param_[2] * param_[3]
-    hvar <- hawkes::jumpVariance(param[1], param[2], param[3], binSize)
-    hcov <- sapply(1:(n-1), function(tau) {
-      (1 - tau / n) * hawkes::jumpAutocorrelation(param[1], param[2], param[3], binSize, tau-1)
-    }) * hvar
-    spec <- 2 * Re(sapply(omega, function(w) {
-      sum( hcov * exp( -1i * w * 1:(n-1) ) )
-    })) + hvar
-    return( sum(log(spec) + I / spec) )
+    model$param <- param
+    return( -model$wlikCov(I) )
+    # hvar <- hawkes::jumpVariance(param[1], param[2], param[3], binSize)
+    # hcov <- sapply(1:(n-1), function(tau) {
+    #   (1 - tau / n) * hawkes::jumpAutocorrelation(param[1], param[2], param[3], binSize, tau-1)
+    # }) * hvar
+    # spec <- 2 * Re(sapply(omega, function(w) {
+    #   sum( hcov * exp( -1i * w * 1:(n-1) ) )
+    # })) + hvar
+    # return( sum(log(spec) + I / spec) )
   }
   
   opt <- optim(par=c(1, .5, 2), fn = wlik, lower = rep(.0001, 3), upper = c(2e16, .9999, 2e16), method = "L-BFGS-B")

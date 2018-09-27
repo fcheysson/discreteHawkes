@@ -5,27 +5,21 @@ using namespace Rcpp;
 
 const arma::cx_double i(0.0, 1.0);
 
+struct DData {
+	arma::vec x;
+	double binSize;
+};
+
 //' @export Hawkes
 class Hawkes {
 	protected:
-		// User specified
 		arma::vec data;
-		double binSize;
-		
-		// To be estimated
+		DData ddata;
 		arma::vec param;
-		
-		virtual double mean() { return 0.0; };
-		
-		// Useful function for spectral density
-		static double sinc( double x ) {
-			if (x == 0) return 1;
-			return sin(x) / x;
-		};
-		
 	public:
 		// Constructor
-		Hawkes( double binSize ) : binSize(binSize) {};
+		Hawkes() : {};
+		Hawkes( arma::vec data ) : Data(
 		Hawkes( arma::vec data, double binSize ) : data(data), binSize(binSize) {};
 		virtual ~Hawkes() {};
 		

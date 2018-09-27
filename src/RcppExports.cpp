@@ -6,15 +6,3 @@
 
 using namespace Rcpp;
 
-
-RcppExport SEXP _rcpp_module_boot_MyModule();
-
-static const R_CallMethodDef CallEntries[] = {
-    {"_rcpp_module_boot_MyModule", (DL_FUNC) &_rcpp_module_boot_MyModule, 0},
-    {NULL, NULL, 0}
-};
-
-RcppExport void R_init_discreteHawkes(DllInfo *dll) {
-    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
-    R_useDynamicSymbols(dll, FALSE);
-}
