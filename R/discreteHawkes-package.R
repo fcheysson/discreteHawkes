@@ -11,7 +11,7 @@
 #' @useDynLib discreteHawkes
 NULL
 
-loadModule("MyModule", TRUE)
+loadModule("HawkesModule", TRUE)
 
 #' function that calls the class of Rcpp
 #'

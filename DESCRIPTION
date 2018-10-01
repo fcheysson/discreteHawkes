@@ -9,5 +9,5 @@ Description: More about what it does (maybe more than one line)
 License: What license is it under?
 Depends: Rcpp (>= 0.12.10)
 LinkingTo: Rcpp, RcppArmadillo
-RcppModules: MyModule
+RcppModules: HawkesModule
 RoxygenNote: 6.1.0
