@@ -38,6 +38,9 @@ class Hawkes {
 		double gammaf1( double xi, int trunc );
 		arma::vec gammaf1_( arma::vec xi, int trunc );
 		
+		// Likelihood methods
+		double whittleLik( arma::vec& I, int trunc );
+		
 		// Get and set methods
 		void setParam( arma::vec param_ ) {
 			param = param_;

@@ -3,15 +3,15 @@
 const arma::cx_double i(0.0, 1.0);
 
 double sinc( double x ) {
-	if (x == 0) return 1;
+	if (x == 0.0) return 1.0;
 	return sin(x) / x;
 };
 
 arma::vec sinc_( arma::vec x ) {
 	arma::vec y(x.n_elem);
 	for (arma::uword k = 0; k < x.n_elem; k++) {
-		if (x(k) == 0)
-			y(k) = 1;
+		if (x(k) == 0.0)
+			y(k) = 1.0;
 		else
 			y(k) = sin(x(k)) / x(k);
 		}
@@ -33,17 +33,24 @@ arma::vec Hawkes::gammaf_( arma::vec xi ) {
 };
 
 double Hawkes::gammaf1( double xi, int trunc ) {
-	arma::vec omega = xi + 2 * arma::datum::pi * arma::regspace<arma::vec>(-trunc, trunc);
+	arma::vec omega = xi + 2.0 * arma::datum::pi * arma::regspace<arma::vec>(-trunc, trunc);
 	return arma::sum( gammaf_(omega) );
 };
 
 arma::vec Hawkes::gammaf1_( arma::vec xi, int trunc ) {
-	arma::vec omega_ = 2 * arma::datum::pi * arma::regspace<arma::vec>(-trunc, trunc);
+	arma::vec omega_ = 2.0 * arma::datum::pi * arma::regspace<arma::vec>(-trunc, trunc);
 	arma::vec y(xi.n_elem);
 	for (arma::uword k = 0; k < xi.n_elem; k++) {
 		y(k) = arma::sum( gammaf_(xi(k) + omega_) );
 	}
 	return y;
+};
+
+double Hawkes::whittleLik( arma::vec& I, int trunc ) {
+	arma::uword n = I.n_elem;
+	arma::vec omega = 2.0 * arma::datum::pi * arma::regspace<arma::vec>(0, n-1) / (double)n;
+	arma::vec spectrum = gammaf1_( omega, trunc );
+	return -arma::sum( arma::log(spectrum) + I / spectrum );
 };
 
 /////////////////////////////////////////////////////////////// EXPHAWKES ///////////////////////////////////////////////////////////////
@@ -105,11 +112,12 @@ RCPP_MODULE(HawkesModule) {
 	using namespace Rcpp;
 
 	class_<Hawkes>("Hawkes")
-		.constructor() // This exposes the default constructor
+		.default_constructor() // This exposes the default constructor
 		.method("gammaf", &Hawkes::gammaf)
 		.method("gammaf_", & Hawkes::gammaf_)
 		.method("gammaf1", &Hawkes::gammaf1)
 		.method("gammaf1_", &Hawkes::gammaf1_)
+		.method("whittleLik", &Hawkes::whittleLik)
 		.property("param", &Hawkes::getParam, &Hawkes::setParam)
 		.property("data", &Hawkes::getData, &Hawkes::setData)
 		.property("ddata", &Hawkes::getDData, &Hawkes::setDData)
@@ -117,7 +125,7 @@ RCPP_MODULE(HawkesModule) {
 	;
 	class_<ExpHawkes>("ExpHawkes")
 		.derives<Hawkes>("Hawkes")
-		.constructor() // This exposes the default constructor
+		.default_constructor() // This exposes the default constructor
 		.method("h", &ExpHawkes::h)
 		.method("h_", &ExpHawkes::h_)
 		.method("H", &ExpHawkes::H)
@@ -128,22 +136,6 @@ RCPP_MODULE(HawkesModule) {
 	;
 
 }
-
-// class Hawkes {
-	// public:
-		
-		// // Method for Whittle likelihood
-		// double wlik( arma::vec& I, int trunc ) {
-			// double lik = 0.0;
-			// double omega, spec;
-			// for (arma::uword k = 1; k < data.n_elem; k++) {
-				// omega = 2.0 * (double)k * arma::datum::pi / data.n_elem;
-				// spec = gammaf1(omega, trunc);
-				// lik -= log(spec) + I(k) / spec;
-			// }
-			// return lik;
-		// };
-// };
 
 // class ExpHawkes: public Hawkes {
 	// public:

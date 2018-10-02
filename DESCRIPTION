@@ -11,3 +11,4 @@ Depends: Rcpp (>= 0.12.10)
 LinkingTo: Rcpp, RcppArmadillo
 RcppModules: HawkesModule
 RoxygenNote: 6.1.0
+Encoding: UTF-8

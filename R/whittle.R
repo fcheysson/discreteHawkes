@@ -7,29 +7,27 @@
 #'
 #' @examples
 #' @export
-whittle <- function(data, binSize, trunc=5) {
-  model <- new(ExpHawkes, data, binSize)
+whittle <- function(data, binsize, init=c(1,.5,2), trunc=5, ...) {
+  model <- new(ExpHawkes)
+  model$ddata <- data
+  model$binsize <- binsize
   
   n <- length(data)
   
   # Periodogram
-  dft <- fft(data - mean(data))   # Since centering, need to ignore omega=0 frequency
+  dft <- fft(data - mean(data))
   I <- Mod(dft)^2 / n
-  omega <- 0:(n-1) * 2 * pi / n
-  
-  # Whittle pseudo likelihood function
+
+  # Whittle pseudo likelihood function (for optim)
   wlik <- function(param_) {
+    # Maybe reparameterize (lambda, alpha/beta, beta) to put upper conditions on optim c(Inf, .9999, Inf)
     param <- param_
-    param[2] <- param_[2] * param_[3]
+    param[2] <- param[2] * param[3]
     model$param <- param
-    return( -model$wlik(I, trunc) )
-    # spec <- sapply(omega, function(w) {
-    #   model$gammaf1(w, trunc)
-    # })
-    # return( sum(log(spec) + I / spec) )
+    return( -model$whittleLik(I, trunc) )
   }
   
-  opt <- optim(par=c(1, .5, 2), fn = wlik, lower = rep(.0001, 3), upper = c(2e16, .9999, 2e16), method = "L-BFGS-B")
+  opt <- optim(par=init, fn = wlik, lower = rep(.0001, 3), upper = c(Inf, .9999, Inf), method = "L-BFGS-B", ...)
   
   return( opt )
 }
@@ -43,33 +41,30 @@ whittle <- function(data, binSize, trunc=5) {
 #'
 #' @examples
 #' @export
-whittle_cov <- function(data, binSize) {
+whittle_cov <- function(data, binsize, init=c(1,.5,2), ...) {
+  model <- new(ExpHawkes)
+  model$ddata <- data
+  model$binsize <- binsize
+  
   n <- length(data)
   
   # Periodogram
   dft <- fft(data - mean(data))
   I <- Mod(dft)^2 / n
-  omega <- 0:(n-1) * 2 * pi / n
-  
-  # Whittle pseudo likelihood function
-  # using debiased
+
+  # Debiased Whittle pseudo likelihood function
+  # Shumway, R. H., & Stoffer, D. S. (2011). Time Series Analysis and Its Applications. http://doi.org/10.1007/978-1-4419-7865-3
   # Da Fonseca, J., & Zaatour, R. (2014). Hawkes process: Fast calibration, application to trade clustering, and diffusive limit. Journal of Futures Markets (Vol. 34). http://doi.org/10.1002/fut.21644
   wlik <- function(param_) {
     param <- param_
-    param[2] <- param_[2] * param_[3]
+    param[2] <- param[2] * param[3]
     model$param <- param
-    return( -model$wlikCov(I) )
-    # hvar <- hawkes::jumpVariance(param[1], param[2], param[3], binSize)
-    # hcov <- sapply(1:(n-1), function(tau) {
-    #   (1 - tau / n) * hawkes::jumpAutocorrelation(param[1], param[2], param[3], binSize, tau-1)
-    # }) * hvar
-    # spec <- 2 * Re(sapply(omega, function(w) {
-    #   sum( hcov * exp( -1i * w * 1:(n-1) ) )
-    # })) + hvar
-    # return( sum(log(spec) + I / spec) )
+    dcov <- (1-0:(n-1)/n) * c( model$var(), model$cov_(0:(n-2)) )
+    dspectrum <- 2 * Re( fft(dcov) ) - model$var()
+    return( +sum( log(dspectrum) + I / dspectrum ) )
   }
   
-  opt <- optim(par=c(1, .5, 2), fn = wlik, lower = rep(.0001, 3), upper = c(2e16, .9999, 2e16), method = "L-BFGS-B")
+  opt <- optim(par=init, fn = wlik, lower = rep(.0001, 3), upper = c(Inf, .9999, Inf), method = "L-BFGS-B", ...)
   
   return( opt )
 }
