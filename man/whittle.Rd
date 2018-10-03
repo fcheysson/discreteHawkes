@@ -4,7 +4,7 @@
 \alias{whittle}
 \title{Title}
 \usage{
-whittle(data, binsize, trunc = 5)
+whittle(data, binsize, init = c(1, 0.5, 2), trunc = 5, ...)
 }
 \arguments{
 \item{hawkes}{}

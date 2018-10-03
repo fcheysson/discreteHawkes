@@ -1,7 +1,5 @@
 #include "hawkes.hpp"
 
-const arma::cx_double i(0.0, 1.0);
-
 double sinc( double x ) {
 	if (x == 0.0) return 1.0;
 	return sin(x) / x;
@@ -79,6 +77,7 @@ arma::cx_vec ExpHawkes::H_( arma::vec xi ) {
 	return zeta;
 };
 
+/*
 // Time-domain covariance functions
 // Da Fonseca, J., & Zaatour, R. (2014). Hawkes process: Fast calibration, application to trade clustering, and diffusive limit. Journal of Futures Markets (Vol. 34). http://doi.org/10.1002/fut.21644
 double ExpHawkes::var() {
@@ -106,6 +105,7 @@ arma::vec ExpHawkes::cov_( arma::uvec tau ) {
 	double factor = .5 * param(0) * param(1) * param(2) * (2.0*param(2) - param(1)) * expm12 / gamma4;
 	return factor * arma::exp( gamma * arma::conv_to<arma::vec>::from(tau) );
 };
+*/
 
 /////////////////////////////////////////////////////////////// MODULE ///////////////////////////////////////////////////////////////
 RCPP_MODULE(HawkesModule) {
@@ -130,35 +130,9 @@ RCPP_MODULE(HawkesModule) {
 		.method("h_", &ExpHawkes::h_)
 		.method("H", &ExpHawkes::H)
 		.method("H_", &ExpHawkes::H_)
-		.method("var", &ExpHawkes::var)
-		.method("cov", &ExpHawkes::cov)
-		.method("cov_", &ExpHawkes::cov_)
+		// .method("var", &ExpHawkes::var)
+		// .method("cov", &ExpHawkes::cov)
+		// .method("cov_", &ExpHawkes::cov_)
 	;
 
 }
-
-// class ExpHawkes: public Hawkes {
-	// public:
-		
-		
-		// // Methods for de-biased Whittle
-		// // Sykulski, A. M., Olhede, S. C., & Lilly, J. M. (2016). The De-Biased Whittle Likelihood for Second-Order Stationary Stochastic Processes, 1–28. Retrieved from http://arxiv.org/abs/1605.06718
-		// double dgammaf( double xi ) {
-			// arma::cx_double tmp(0.0, 0.0);
-			// arma::uword n = data.n_elem;
-			// for (arma::uword tau = 0; tau < n; tau++) {
-			// // NEED TO USE FFT HERE TO SPEED UP CALCULATION
-				// tmp += (1.0 - (double)tau / (double)n) * cov(tau) * exp(-i * xi * (double)tau);
-			// }
-			// return 2 * real(tmp) - var();
-		// };
-		// double wlikCov( arma::vec& I ) {
-			// double lik = 0.0;
-			// double omega;
-			// for (arma::uword k = 1; k < data.n_elem; k++) {
-				// omega = 2.0 * (double)k * arma::datum::pi / data.n_elem;
-				// lik -= log(dgammaf(omega)) + I(k) / dgammaf(omega);
-			// }
-			// return lik;
-		// };
-// };

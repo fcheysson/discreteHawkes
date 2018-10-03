@@ -27,10 +27,12 @@ class Hawkes {
 		virtual arma::cx_double H( double xi ) { return arma::cx_double(0.0, 0.0); }; 
 		virtual arma::cx_vec H_( arma::vec xi ) { return arma::zeros<arma::cx_vec>(xi.n_elem); };
 		
+		/*
 		// Variance and covariance methods
 		virtual double var() { return 0.0; };
 		virtual double cov( unsigned int tau ) { return 0.0; };
 		virtual arma::vec cov_( arma::uvec tau ) { return arma::zeros<arma::vec>(tau.n_elem); };
+		*/
 		
 		// Methods for continuous- and discretized-time spectral densities
 		double gammaf( double xi );
@@ -82,8 +84,10 @@ class ExpHawkes: public Hawkes {
 		arma::cx_double H( double xi ); 
 		arma::cx_vec H_( arma::vec xi );
 		
+		/*
 		// Variance and covariance methods
 		double var();
 		double cov( unsigned int tau );
 		arma::vec cov_( arma::uvec tau );
+		*/
 };
