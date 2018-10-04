@@ -16,7 +16,6 @@ class Hawkes {
 		DData ddata;
 		double T;
 		arma::vec param;
-		// arma::mat hessian;
 		arma::mat vcov;
 		Rcpp::List opt;
 		
@@ -24,20 +23,12 @@ class Hawkes {
 		virtual ~Hawkes() {};
 		
 		virtual double mean() { return 0.0; };
-		// arma::mat vcov();
 		
 		// Virtual methods for time- and frequency-domain excitation functions
 		virtual double h( double x ) { return 0.0; };
 		virtual arma::vec h_( arma::vec x ) { return arma::zeros<arma::vec>(x.n_elem); };
 		virtual arma::cx_double H( double xi ) { return arma::cx_double(0.0, 0.0); }; 
 		virtual arma::cx_vec H_( arma::vec xi ) { return arma::zeros<arma::cx_vec>(xi.n_elem); };
-		
-		/*
-		// Variance and covariance methods
-		virtual double var() { return 0.0; };
-		virtual double cov( unsigned int tau ) { return 0.0; };
-		virtual arma::vec cov_( arma::uvec tau ) { return arma::zeros<arma::vec>(tau.n_elem); };
-		*/
 		
 		// Methods for continuous- and discretized-time spectral densities
 		double gammaf( double xi );
@@ -88,13 +79,6 @@ class Hawkes {
 			return T;
 		};
 		
-		// void setHessian( arma::mat hessian_ ) {
-			// hessian = hessian_;
-		// };
-		// arma::mat getHessian() {
-			// return hessian;
-		// };
-		
 		void setVcov( arma::mat vcov_ ) {
 			vcov = vcov_;
 		};
@@ -126,11 +110,4 @@ class ExpHawkes: public Hawkes {
 		arma::vec gradient();
 		arma::mat hessian();
 		Rcpp::List likngrad();
-		
-		/*
-		// Variance and covariance methods
-		double var();
-		double cov( unsigned int tau );
-		arma::vec cov_( arma::uvec tau );
-		*/
 };

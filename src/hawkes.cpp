@@ -17,10 +17,6 @@ arma::vec sinc_( arma::vec x ) {
 };
 
 /////////////////////////////////////////////////////////////// HAWKES ///////////////////////////////////////////////////////////////
-// void Hawkes::vcov() {
-	// vcov = arma::inv_sympd(hessian);
-// };
-
 // Methods for continuous- and discretized-time spectral densities
 double Hawkes::gammaf( double xi ) {
 	double term1 = sinc( xi / 2.0 );
@@ -241,43 +237,12 @@ Rcpp::List ExpHawkes::likngrad() {
 	return Rcpp::List::create(Rcpp::Named("objective") = lik, Rcpp::Named("gradient") = grad);
 };
 
-/*
-// Time-domain covariance functions
-// Da Fonseca, J., & Zaatour, R. (2014). Hawkes process: Fast calibration, application to trade clustering, and diffusive limit. Journal of Futures Markets (Vol. 34). http://doi.org/10.1002/fut.21644
-double ExpHawkes::var() {
-	double kappa = 1.0 / ( 1.0 - param(1) / param(2) );
-	double kappa2 = kappa * kappa;
-	double gamma = param(2) - param(1);
-	return mean() * (ddata.binsize * kappa2 + (1.0 - kappa2) * (1.0 - exp(-ddata.binsize * gamma)) / gamma) ;
-};
-
-double ExpHawkes::cov( unsigned int tau ) { // tau = 0 means cov(N[0, binsize], N[binsize, 2*binsize])
-	double gamma = param(1) - param(2);
-	double gamma2 = gamma * gamma;
-	double gamma4 = gamma2 * gamma2;
-	double expm1 = exp(gamma * ddata.binsize) - 1.0;
-	double expm12 = expm1 * expm1;
-	return .5 * param(0) * param(1) * param(2) * (2.0*param(2) - param(1)) * expm12 * exp(gamma * (double)tau) / gamma4;
-};
-
-arma::vec ExpHawkes::cov_( arma::uvec tau ) {
-	double gamma = param(1) - param(2);
-	double gamma2 = gamma * gamma;
-	double gamma4 = gamma2 * gamma2;
-	double expm1 = exp(gamma * ddata.binsize) - 1.0;
-	double expm12 = expm1 * expm1;
-	double factor = .5 * param(0) * param(1) * param(2) * (2.0*param(2) - param(1)) * expm12 / gamma4;
-	return factor * arma::exp( gamma * arma::conv_to<arma::vec>::from(tau) );
-};
-*/
-
 /////////////////////////////////////////////////////////////// MODULE ///////////////////////////////////////////////////////////////
 RCPP_MODULE(HawkesModule) {
 	using namespace Rcpp;
 
 	class_<Hawkes>("Hawkes")
 		.default_constructor() // This exposes the default constructor
-		// .method("vcov", &Hawkes::vcov)
 		.method("gammaf", &Hawkes::gammaf)
 		.method("gammaf_", & Hawkes::gammaf_)
 		.method("gammaf1", &Hawkes::gammaf1)
@@ -289,7 +254,6 @@ RCPP_MODULE(HawkesModule) {
 		.property("binsize", &Hawkes::getBinsize, &Hawkes::setBinsize)	
 		.property("T", &Hawkes::getT, &Hawkes::setT)
 		.property("vcov", &Hawkes::getVcov, &Hawkes::setVcov)
-		// .property("hessian", &Hawkes::getHessian, &Hawkes::setHessian)
 		.property("opt", &Hawkes::getOpt, &Hawkes::setOpt)
 	;
 	class_<ExpHawkes>("ExpHawkes")
@@ -303,9 +267,6 @@ RCPP_MODULE(HawkesModule) {
 		.method("gradient", &ExpHawkes::gradient)
 		.method("hessian", &ExpHawkes::hessian)
 		.method("likngrad", &ExpHawkes::likngrad)
-		// .method("var", &ExpHawkes::var)
-		// .method("cov", &ExpHawkes::cov)
-		// .method("cov_", &ExpHawkes::cov_)
 	;
 
 }
