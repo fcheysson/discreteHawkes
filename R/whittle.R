@@ -6,7 +6,6 @@
 #' @export
 #'
 #' @examples
-#' @export
 whittle <- function(data, binsize, init=c(1,.5,2), trunc=5, ...) {
   model <- new(ExpHawkes)
   model$ddata <- data
@@ -29,19 +28,17 @@ whittle <- function(data, binsize, init=c(1,.5,2), trunc=5, ...) {
   
   opt <- optim(par=init, fn = wlik, hessian = TRUE, lower = rep(.0001, 3), upper = c(Inf, .9999, Inf), method = "L-BFGS-B", ...)
   
-  param <- c(opt$par[1], opt$par[2] * opt$par[3], opt$par[3])
+  # param <- c(opt$par[1], opt$par[2] * opt$par[3], opt$par[3])
   derivative <- matrix(byrow = TRUE, nrow = 3, ncol = 3,
                        data = c(1,          0, 0,
                                 0, opt$par[3], 0,
                                 0, opt$par[2], 1))
   vcov <- t(derivative) %*% solve(opt$hessian) %*% derivative
+  
+  model$vcov <- vcov
+  model$opt <- opt
 
-  estim <- list(param = param,
-                vcov = vcov,
-                opt = opt)
-
-  # Would like to return model here. So let's change model to include an opt and vcov members
-  return( estim )
+  return( model )
 }
 
 # #' whittle_cov
@@ -52,7 +49,6 @@ whittle <- function(data, binsize, init=c(1,.5,2), trunc=5, ...) {
 # #' @export
 # #'
 # #' @examples
-# #' @export
 # whittle_cov <- function(data, binsize, init=c(1,.5,2), ...) {
 #   model <- new(ExpHawkes)
 #   model$ddata <- data

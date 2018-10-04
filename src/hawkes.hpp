@@ -14,12 +14,17 @@ class Hawkes {
 	protected:
 		arma::vec data;
 		DData ddata;
+		double T;
 		arma::vec param;
+		// arma::mat hessian;
+		arma::mat vcov;
+		Rcpp::List opt;
 		
 	public:
 		virtual ~Hawkes() {};
 		
 		virtual double mean() { return 0.0; };
+		// arma::mat vcov();
 		
 		// Virtual methods for time- and frequency-domain excitation functions
 		virtual double h( double x ) { return 0.0; };
@@ -40,7 +45,11 @@ class Hawkes {
 		double gammaf1( double xi, int trunc );
 		arma::vec gammaf1_( arma::vec xi, int trunc );
 		
-		// Likelihood methods
+		// Likelihood estimation methods
+		virtual double loglik() { return 0.0; };
+		virtual arma::vec gradient() { return arma::zeros<arma::vec>(param.n_elem); };
+		virtual arma::mat hessian() { return arma::zeros<arma::mat>(param.n_elem, param.n_elem); };
+		virtual Rcpp::List likngrad() { return Rcpp::List::create(); };
 		double whittleLik( arma::vec& I, int trunc );
 		
 		// Get and set methods
@@ -71,6 +80,34 @@ class Hawkes {
 		double getBinsize() {
 			return ddata.binsize;
 		};
+		
+		void setT( double T_ ) {
+			T = T_;
+		};
+		double getT() {
+			return T;
+		};
+		
+		// void setHessian( arma::mat hessian_ ) {
+			// hessian = hessian_;
+		// };
+		// arma::mat getHessian() {
+			// return hessian;
+		// };
+		
+		void setVcov( arma::mat vcov_ ) {
+			vcov = vcov_;
+		};
+		arma::mat getVcov() {
+			return vcov;
+		};
+		
+		void setOpt( Rcpp::List opt_ ) {
+			opt = opt_;
+		};
+		Rcpp::List getOpt() {
+			return opt;
+		};
 };
 
 //' @export ExpHawkes
@@ -78,11 +115,17 @@ class ExpHawkes: public Hawkes {
 	public:
 		double mean();
 		
-		// Virtual methods for time- and frequency-domain excitation functions
+		// Methods for time- and frequency-domain excitation functions
 		double h( double x );
 		arma::vec h_( arma::vec x );
 		arma::cx_double H( double xi ); 
 		arma::cx_vec H_( arma::vec xi );
+		
+		// Likelihood methods
+		double loglik();
+		arma::vec gradient();
+		arma::mat hessian();
+		Rcpp::List likngrad();
 		
 		/*
 		// Variance and covariance methods

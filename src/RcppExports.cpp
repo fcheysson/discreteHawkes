@@ -6,3 +6,17 @@
 
 using namespace Rcpp;
 
+
+RcppExport SEXP _rcpp_module_boot_HawkesModule();
+RcppExport SEXP _rcpp_module_boot_RandomModule();
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_rcpp_module_boot_HawkesModule", (DL_FUNC) &_rcpp_module_boot_HawkesModule, 0},
+    {"_rcpp_module_boot_RandomModule", (DL_FUNC) &_rcpp_module_boot_RandomModule, 0},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_discreteHawkes(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
+}

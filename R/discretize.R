@@ -8,7 +8,6 @@
 #' @export
 #'
 #' @examples
-#' @export
 discrete <- function(hawkes, length=NULL, binSize=NULL) {
   if (is.null(length) & is.null(binSize))
     stop("One of length or binSize must be specified.")
