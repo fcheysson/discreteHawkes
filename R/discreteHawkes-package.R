@@ -12,3 +12,7 @@
 NULL
 
 loadModule("HawkesModule", TRUE)
+
+.onUnload <- function (libpath) {
+  library.dynam.unload("discreteHawkes", libpath)
+}
