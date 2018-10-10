@@ -1,4 +1,11 @@
 #include "hawkes.hpp"
+#include "expint.h"
+
+//' @export
+//[[Rcpp::export]]
+double test( double x ) {
+  return pkg_expint_E1(x, 0);
+};
 
 double sinc( double x ) {
 	if (x == 0.0) return 1.0;

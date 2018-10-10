@@ -8,6 +8,7 @@
 #'
 #' @docType package
 #' @name discreteHawkes
+#' @import expint
 #' @useDynLib discreteHawkes
 NULL
 

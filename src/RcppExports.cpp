@@ -6,15 +6,14 @@
 
 using namespace Rcpp;
 
-
-RcppExport SEXP _rcpp_module_boot_HawkesModule();
-
-static const R_CallMethodDef CallEntries[] = {
-    {"_rcpp_module_boot_HawkesModule", (DL_FUNC) &_rcpp_module_boot_HawkesModule, 0},
-    {NULL, NULL, 0}
-};
-
-RcppExport void R_init_discreteHawkes(DllInfo *dll) {
-    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
-    R_useDynamicSymbols(dll, FALSE);
+// test
+double test(double x);
+RcppExport SEXP _discreteHawkes_test(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(test(x));
+    return rcpp_result_gen;
+END_RCPP
 }

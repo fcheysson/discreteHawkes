@@ -8,7 +8,8 @@ Maintainer: Who to complain to <yourfault@somewhere.net>
 Description: More about what it does (maybe more than one line)
 License: What license is it under?
 Depends: Rcpp (>= 0.12.10), nloptr
-LinkingTo: Rcpp, RcppArmadillo
+Imports: expint
+LinkingTo: Rcpp, RcppArmadillo, expint
 RcppModules: HawkesModule
 RoxygenNote: 6.1.0
 Encoding: UTF-8
