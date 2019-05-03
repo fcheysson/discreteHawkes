@@ -51,7 +51,11 @@ arma::vec Hawkes::gammaf1_( arma::vec xi, int trunc ) {
 	return y;
 };
 
-double Hawkes::whittleLik( arma::vec& I, int trunc ) {
+arma::vec Hawkes::gradf( double xi ) {
+	//// PLUS TARD
+};
+
+double Hawkes::wLik( arma::vec& I, int trunc ) {
 	arma::uword n = I.n_elem;
 	arma::vec omega = 2.0 * arma::datum::pi * arma::regspace<arma::vec>(0, n-1) / (double)n;
 	arma::vec spectrum = gammaf1_( omega, trunc );
@@ -82,6 +86,10 @@ arma::cx_vec ExpHawkes::H_( arma::vec xi ) {
 	arma::vec factor = param(1) / ( param(2)*param(2) + xi%xi );
 	arma::cx_vec zeta = arma::cx_vec( factor * param(2), - factor % xi );
 	return zeta;
+};
+
+arma::cx_vec dH( double xi ) {
+	
 };
 
 // Likelihood methods
@@ -254,7 +262,7 @@ RCPP_MODULE(HawkesModule) {
 		.method("gammaf_", & Hawkes::gammaf_)
 		.method("gammaf1", &Hawkes::gammaf1)
 		.method("gammaf1_", &Hawkes::gammaf1_)
-		.method("whittleLik", &Hawkes::whittleLik)
+		.method("wLik", &Hawkes::wLik)
 		.property("param", &Hawkes::getParam, &Hawkes::setParam)
 		.property("data", &Hawkes::getData, &Hawkes::setData)
 		.property("ddata", &Hawkes::getDData, &Hawkes::setDData)

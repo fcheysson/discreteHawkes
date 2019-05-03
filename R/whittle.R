@@ -22,7 +22,7 @@ whittle <- function(data, binsize, init=c(1,.5,2), trunc=5, ...) {
     param <- param_
     param[2] <- param[2] * param[3]
     model$param <- param
-    return( -model$whittleLik(I, trunc) )
+    return( -model$wLik(I, trunc) )
   }
   
   opt <- optim(par=init, fn = wlik, hessian = TRUE, lower = rep(.0001, 3), upper = c(Inf, .9999, Inf), method = "L-BFGS-B", ...)
@@ -61,7 +61,7 @@ whittle_ <- function(model, trunc=5, ...) {
     param <- param_
     param[2] <- param[2] * param[3]
     model$param <- param
-    return( -model$whittleLik(I, trunc) )
+    return( -model$wLik(I, trunc) )
   }
   
   opt <- optim(par=model$param, fn = wlik, hessian = TRUE, lower = rep(.0001, 3), upper = c(Inf, .9999, Inf), method = "L-BFGS-B", ...)

@@ -29,19 +29,24 @@ class Hawkes {
 		virtual arma::vec h_( arma::vec x ) { return arma::zeros<arma::vec>(x.n_elem); };
 		virtual arma::cx_double H( double xi ) { return arma::cx_double(0.0, 0.0); }; 
 		virtual arma::cx_vec H_( arma::vec xi ) { return arma::zeros<arma::cx_vec>(xi.n_elem); };
+		virtual arma::cx_vec dH( double xi ) { return arma::zeros<arma::cx_vec>(param.n_elem); };
+		virtual arma::cx_mat dH_( arma::vec xi ) { return arma::zeros<arma::cx_mat>(param.n_elem, xi.n_elem); };
 		
 		// Methods for continuous- and discretized-time spectral densities
 		double gammaf( double xi );
 		arma::vec gammaf_( arma::vec xi );
 		double gammaf1( double xi, int trunc );
 		arma::vec gammaf1_( arma::vec xi, int trunc );
+		arma::vec gradf( double xi );
 		
 		// Likelihood estimation methods
 		virtual double loglik() { return 0.0; };
 		virtual arma::vec gradient() { return arma::zeros<arma::vec>(param.n_elem); };
 		virtual arma::mat hessian() { return arma::zeros<arma::mat>(param.n_elem, param.n_elem); };
 		virtual Rcpp::List likngrad() { return Rcpp::List::create(); };
-		double whittleLik( arma::vec& I, int trunc );
+		
+		// Whittle likelihood estimation methods
+		double wLik( arma::vec& I, int trunc );
 		
 		// Get and set methods
 		void setParam( arma::vec param_ ) {
@@ -104,6 +109,8 @@ class ExpHawkes: public Hawkes {
 		arma::vec h_( arma::vec x );
 		arma::cx_double H( double xi ); 
 		arma::cx_vec H_( arma::vec xi );
+		arma::cx_vec dH( double xi );
+		arma::cx_mat dH_( arma::vec xi ); 
 		
 		// Likelihood methods
 		double loglik();
