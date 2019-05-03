@@ -51,46 +51,46 @@ arma::vec Hawkes::gammaf1_( arma::vec xi, int trunc ) {
 	return y;
 };
 
-arma::vec Hawkes::gradf( double xi ) {
-	//// PLUS TARD
-};
+// arma::vec Hawkes::gradf( double xi ) {
+	// //// PLUS TARD
+// };
 
 double Hawkes::wLik( arma::vec& I, int trunc ) {
 	arma::uword n = I.n_elem;
 	arma::vec omega = 2.0 * arma::datum::pi * arma::regspace<arma::vec>(0, n-1) / (double)n;
 	arma::vec spectrum = gammaf1_( omega, trunc );
-	return -arma::sum( arma::log(spectrum) + I / spectrum );
+	return arma::sum( arma::log(spectrum) + I / spectrum );
 };
 
 /////////////////////////////////////////////////////////////// EXPHAWKES ///////////////////////////////////////////////////////////////
 double ExpHawkes::mean() {
-	return param(0) / ( 1.0 - param(1) / param(2) );
+	return param(0) / ( 1.0 - param(1) );
 };
 
 // Virtual methods for time- and frequency-domain excitation functions
 double ExpHawkes::h( double x ) {
-	return param(1) * exp( - param(2) * x );
+	return param(1) * param(2) * exp( - param(2) * x );
 };
 
 arma::vec ExpHawkes::h_( arma::vec x ) {
-	return param(1) * arma::exp( - param(2) * x );
+	return param(1) * param(2) * arma::exp( - param(2) * x );
 };
 
 arma::cx_double ExpHawkes::H( double xi ) {
-	double factor = param(1) / ( param(2)*param(2) + xi*xi );
+	double factor = param(1) * param(2) / ( param(2)*param(2) + xi*xi );
 	arma::cx_double zeta = arma::cx_double( factor * param(2), - factor * xi );
 	return zeta;
 }; 
 
 arma::cx_vec ExpHawkes::H_( arma::vec xi ) {
-	arma::vec factor = param(1) / ( param(2)*param(2) + xi%xi );
+	arma::vec factor = param(1) * param(2) / ( param(2)*param(2) + xi%xi );
 	arma::cx_vec zeta = arma::cx_vec( factor * param(2), - factor % xi );
 	return zeta;
 };
 
-arma::cx_vec dH( double xi ) {
+// arma::cx_vec dH( double xi ) {
 	
-};
+// };
 
 // Likelihood methods
 double ExpHawkes::loglik() {

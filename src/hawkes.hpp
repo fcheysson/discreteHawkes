@@ -109,8 +109,8 @@ class ExpHawkes: public Hawkes {
 		arma::vec h_( arma::vec x );
 		arma::cx_double H( double xi ); 
 		arma::cx_vec H_( arma::vec xi );
-		arma::cx_vec dH( double xi );
-		arma::cx_mat dH_( arma::vec xi ); 
+		// arma::cx_vec dH( double xi );
+		// arma::cx_mat dH_( arma::vec xi ); 
 		
 		// Likelihood methods
 		double loglik();

@@ -19,21 +19,14 @@ whittle <- function(data, binsize, init=c(1,.5,2), trunc=5, ...) {
 
   # Whittle pseudo likelihood function (for optim)
   wlik <- function(param_) {
-    param <- param_
-    param[2] <- param[2] * param[3]
-    model$param <- param
-    return( -model$wLik(I, trunc) )
+    model$param <- param_
+    return( model$wLik(I, trunc) )
   }
   
-  opt <- optim(par=init, fn = wlik, hessian = TRUE, lower = rep(.0001, 3), upper = c(Inf, .9999, Inf), method = "L-BFGS-B", ...)
+  opt <- optim(par=init, fn = wlik, hessian = TRUE, 
+               lower = rep(.0001, 3), upper = c(Inf, .9999, Inf), method = "L-BFGS-B", ...)
   
-  derivative <- matrix(byrow = TRUE, nrow = 3, ncol = 3,
-                       data = c(1,          0, 0,
-                                0, opt$par[3], 0,
-                                0, opt$par[2], 1))
-  vcov <- t(derivative) %*% solve(opt$hessian) %*% derivative
-  
-  model$vcov <- vcov
+  model$vcov <- solve(opt$hessian)
   model$opt <- opt
 
   return( model )
@@ -58,20 +51,13 @@ whittle_ <- function(model, trunc=5, ...) {
   
   # Whittle pseudo likelihood function (for optim)
   wlik <- function(param_) {
-    param <- param_
-    param[2] <- param[2] * param[3]
-    model$param <- param
-    return( -model$wLik(I, trunc) )
+    model$param <- param_
+    return( model$wLik(I, trunc) )
   }
   
-  opt <- optim(par=model$param, fn = wlik, hessian = TRUE, lower = rep(.0001, 3), upper = c(Inf, .9999, Inf), method = "L-BFGS-B", ...)
+  opt <- optim(par=model$param, fn = wlik, hessian = TRUE, 
+               lower = rep(.0001, 3), upper = c(Inf, .9999, Inf), method = "L-BFGS-B", ...)
   
-  derivative <- matrix(byrow = TRUE, nrow = 3, ncol = 3,
-                       data = c(1,          0, 0,
-                                0, opt$par[3], 0,
-                                0, opt$par[2], 1))
-  vcov <- t(derivative) %*% solve(opt$hessian) %*% derivative
-  
-  model$vcov <- vcov
+  model$vcov <- solve(opt$hessian)
   model$opt <- opt
 }
