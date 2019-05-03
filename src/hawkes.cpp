@@ -7,6 +7,8 @@ double test( double x ) {
   return pkg_expint_E1(x, 0);
 };
 
+arma::cx_double i(0.0, 1.0);
+
 double sinc( double x ) {
 	if (x == 0.0) return 1.0;
 	return sin(x) / x;
@@ -51,6 +53,62 @@ arma::vec Hawkes::gammaf1_( arma::vec xi, int trunc ) {
 	return y;
 };
 
+double Hawkes::G( double xi ) {
+	return 1.0 / std::norm( arma::cx_double(1.0, 0.0) - H( xi ) );
+};
+
+arma::vec Hawkes::G_( arma::vec xi ) {
+	arma::cx_vec temp = arma::cx_double(1.0, 0.0) - H_( xi );
+	return 1.0 / arma::conv_to<arma::vec>::from( temp % arma::conj(temp) );
+};
+
+arma::vec Hawkes::dG( double xi ) {
+	double Gxi = G(xi);
+	return 2.0 * Gxi * Gxi * arma::real( ( 1.0 - std::conj(H(xi)) ) * dH(xi) );
+};
+
+arma::mat Hawkes::dG_( arma::vec xi ) {
+	arma::mat grad( xi.n_elem, param.n_elem );
+	arma::cx_mat gradH = dH_(xi);
+	arma::cx_vec term1 = 1.0 - arma::conj(H_(xi));
+	arma::vec Gxi = G_(xi);
+	arma::vec Gxi2 = Gxi % Gxi;
+	for (arma::uword k = 0; k < param.n_elem; k++) {
+		grad.col(k) = 2.0 * Gxi2 % arma::real( term1 % gradH.col(k) );
+	}
+	return grad;
+};
+
+arma::mat Hawkes::ddG( double xi ) {
+	double Gxi = G(xi);
+	double Gxi2 = Gxi * Gxi;
+	arma::cx_double term0 = 1.0 - std::conj(H(xi));
+	arma::mat term1 = arma::real( term0 * ddH(xi) - dH(xi) * dH(xi).t() );
+	arma::mat term2 = arma::real( term0 * dH(xi) ) * arma::trans(arma::real( term0 * dH(xi) ));
+	return 2 * Gxi2 * (term1 + 4 * Gxi * term2);
+};
+
+arma::cube Hawkes::ddG_( arma::vec xi ) {
+	arma::cube hess( param.n_elem, param.n_elem, xi.n_elem );
+	arma::vec Gxi = G_(xi);
+	arma::vec Gxi2 = Gxi % Gxi;
+	arma::cx_vec term0 = 1.0 - arma::conj(H_(xi));
+	arma::cx_mat gradH = dH_(xi);
+	arma::cx_cube hessH = ddH_(xi);
+	arma::vec term1(xi.n_elem);
+	arma::vec term2(xi.n_elem);
+	arma::cx_vec tube(xi.n_elem);
+	for (arma::uword i = 0; i < param.n_elem; i++) {
+		for (arma::uword j = 0; j < param.n_elem; j++) {
+			tube = hessH(arma::span(i),arma::span(j), arma::span::all);
+			term1 = arma::real( term0 % tube - arma::conj(gradH.col(i)) % gradH.col(j) );
+			term2 = arma::real( term0 % gradH.col(i) ) % arma::real( term0 % gradH.col(j) );
+			hess.tube(i, j) = 2 * Gxi2 % (term1 + 4 * Gxi % term2);
+		}
+	}
+	return hess;
+};
+
 // arma::vec Hawkes::gradf( double xi ) {
 	// //// PLUS TARD
 // };
@@ -88,9 +146,41 @@ arma::cx_vec ExpHawkes::H_( arma::vec xi ) {
 	return zeta;
 };
 
-// arma::cx_vec dH( double xi ) {
-	
-// };
+arma::cx_vec ExpHawkes::dH( double xi ) {
+	arma::cx_vec grad = arma::zeros<arma::cx_vec>( param.n_elem );
+	arma::cx_double denom = 1.0 / (param(2) - i * xi);
+	grad(1) = param(2) * denom;
+	grad(2) = - i * param(1) * xi * denom * denom;
+	return grad;
+};
+
+arma::cx_mat ExpHawkes::dH_( arma::vec xi ) {
+	arma::cx_mat grad = arma::zeros<arma::cx_mat>( xi.n_elem, param.n_elem );
+	arma::cx_vec denom = 1.0 / (param(2) - i * xi);
+	grad.col(1) = param(2) * denom;
+	grad.col(2) = - i * param(1) * (xi % denom % denom);
+	return grad;
+};
+
+arma::cx_mat ExpHawkes::ddH( double xi ) {
+	arma::cx_mat hess = arma::zeros<arma::cx_mat>( param.n_elem, param.n_elem );
+	arma::cx_double denom = 1.0 / (param(2) - i * xi);
+	arma::cx_double grad12 = - i * xi * denom * denom;
+	hess(2,1) = grad12;
+	hess(1,2) = grad12;
+	hess(2,2) = -2.0 * grad12 * denom;
+	return hess;
+};
+
+arma::cx_cube ExpHawkes::ddH_( arma::vec xi ) {
+	arma::cx_cube hess = arma::zeros<arma::cx_cube>( param.n_elem, param.n_elem, xi.n_elem );
+	arma::cx_vec denom = 1.0 / (param(2) - i * xi);
+	arma::cx_vec grad12 = - i * (xi % denom % denom);
+	hess.tube(1,2) = grad12;
+	hess.tube(2,1) = grad12;
+	hess.tube(2,2) = -2.0 * grad12 % denom;
+	return hess;
+};
 
 // Likelihood methods
 double ExpHawkes::loglik() {
@@ -122,10 +212,10 @@ arma::vec ExpHawkes::gradient() {
 	const double eta = param(0);
 	const double alpha = param(1);
 	const double beta = param(2);
-	const double inv_beta = 1/beta;
+	const double inv_beta = 1.0/beta;
 	
 	// Fill for i = 0
-	arma::vec grad = { 1/eta, 0, 0 };
+	arma::vec grad = { 1.0/eta, 0.0, 0.0 };
 	
 	// Iterate on arrival times
 	double A = 0.0;
@@ -161,12 +251,12 @@ arma::mat ExpHawkes::hessian() {
 	const double eta = param(0);
 	const double alpha = param(1);
 	const double beta = param(2);
-	const double inv_beta = 1/beta;
+	const double inv_beta = 1.0/beta;
 	
 	// Fill for i = 0
-	arma::mat hess = { {-1/eta, 0, 0},
-					   {     0, 0, 0},
-					   {     0, 0, 0} };
+	arma::mat hess = { {-1.0/eta, 0.0, 0.0},
+					   {     0.0, 0.0, 0.0},
+					   {     0.0, 0.0, 0.0} };
 	
 	// Iterate on arrival times
 	double A = 0.0;
@@ -216,11 +306,11 @@ Rcpp::List ExpHawkes::likngrad() {
 	const double eta = param(0);
 	const double alpha = param(1);
 	const double beta = param(2);
-	const double inv_beta = 1/beta;
+	const double inv_beta = 1.0/beta;
 	
 	// Fill for i = 0
 	double lik = log(eta);
-	arma::vec grad = { 1/eta, 0, 0 };
+	arma::vec grad = { 1.0/eta, 0.0, 0.0 };
 	
 	// Iterate on arrival times
 	double A = 0.0;
@@ -262,6 +352,12 @@ RCPP_MODULE(HawkesModule) {
 		.method("gammaf_", & Hawkes::gammaf_)
 		.method("gammaf1", &Hawkes::gammaf1)
 		.method("gammaf1_", &Hawkes::gammaf1_)
+		.method("G", &Hawkes::G)
+		.method("G_", &Hawkes::G_)
+		.method("dG", &Hawkes::dG)
+		.method("dG_", &Hawkes::dG_)
+		.method("ddG", &Hawkes::ddG)
+		.method("ddG_", &Hawkes::ddG_)
 		.method("wLik", &Hawkes::wLik)
 		.property("param", &Hawkes::getParam, &Hawkes::setParam)
 		.property("data", &Hawkes::getData, &Hawkes::setData)
@@ -278,6 +374,10 @@ RCPP_MODULE(HawkesModule) {
 		.method("h_", &ExpHawkes::h_)
 		.method("H", &ExpHawkes::H)
 		.method("H_", &ExpHawkes::H_)
+		.method("dH", &ExpHawkes::dH)
+		.method("dH_", &ExpHawkes::dH_)
+		.method("ddH", &ExpHawkes::ddH)
+		.method("ddH_", &ExpHawkes::ddH_)
 		.method("loglik", &ExpHawkes::loglik)
 		.method("gradient", &ExpHawkes::gradient)
 		.method("hessian", &ExpHawkes::hessian)

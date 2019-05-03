@@ -31,12 +31,20 @@ class Hawkes {
 		virtual arma::cx_vec H_( arma::vec xi ) { return arma::zeros<arma::cx_vec>(xi.n_elem); };
 		virtual arma::cx_vec dH( double xi ) { return arma::zeros<arma::cx_vec>(param.n_elem); };
 		virtual arma::cx_mat dH_( arma::vec xi ) { return arma::zeros<arma::cx_mat>(param.n_elem, xi.n_elem); };
+		virtual arma::cx_mat ddH( double xi ) { return arma::zeros<arma::cx_mat>(param.n_elem, param.n_elem); };
+		virtual arma::cx_cube ddH_( arma::vec xi ) { return arma::zeros<arma::cx_cube>(param.n_elem, param.n_elem, xi.n_elem); };
 		
 		// Methods for continuous- and discretized-time spectral densities
 		double gammaf( double xi );
 		arma::vec gammaf_( arma::vec xi );
 		double gammaf1( double xi, int trunc );
 		arma::vec gammaf1_( arma::vec xi, int trunc );
+		double G( double xi );
+		arma::vec G_( arma::vec xi );
+		arma::vec dG( double xi );
+		arma::mat dG_( arma::vec xi );
+		arma::mat ddG( double xi );
+		arma::cube ddG_( arma::vec xi );
 		arma::vec gradf( double xi );
 		
 		// Likelihood estimation methods
@@ -109,8 +117,10 @@ class ExpHawkes: public Hawkes {
 		arma::vec h_( arma::vec x );
 		arma::cx_double H( double xi ); 
 		arma::cx_vec H_( arma::vec xi );
-		// arma::cx_vec dH( double xi );
-		// arma::cx_mat dH_( arma::vec xi ); 
+		arma::cx_vec dH( double xi );
+		arma::cx_mat dH_( arma::vec xi ); 
+		arma::cx_mat ddH( double xi ); 
+		arma::cx_cube ddH_( arma::vec xi ); 
 		
 		// Likelihood methods
 		double loglik();
