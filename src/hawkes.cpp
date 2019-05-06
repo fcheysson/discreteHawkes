@@ -109,9 +109,86 @@ arma::cube Hawkes::ddG_( arma::vec xi ) {
 	return hess;
 };
 
-// arma::vec Hawkes::gradf( double xi ) {
-	// //// PLUS TARD
-// };
+arma::vec Hawkes::gradf( double xi ) {
+	double term0 = sinc( xi / 2.0 );
+	return ddata.binsize * term0 * term0 * ( gradmean() * G( xi / ddata.binsize ) + mean() * dG( xi / ddata.binsize ) );
+};
+
+arma::mat Hawkes::gradf_( arma::vec xi ) {
+	arma::mat grad( xi.n_elem, param.n_elem );
+	
+	arma::vec term0 = sinc_( xi / 2.0 );
+	arma::vec term1 = ddata.binsize * term0 % term0;
+	
+	double m = mean();
+	arma::vec dm = gradmean();
+	arma::vec Gxb = G_( xi / ddata.binsize );
+	arma::mat gradG = dG_( xi / ddata.binsize );
+	
+	for (arma::uword k = 0; k < param.n_elem; k++) {
+		grad.col(k) = term1 % ( dm(k) * Gxb + m * gradG.col(k) );
+	}
+	return grad;
+};
+
+arma::mat Hawkes::hessf( double xi ) {
+	double term0 = sinc( xi / 2.0 );
+	return ddata.binsize * term0 * term0 * ( hessmean() * G( xi / ddata.binsize ) + 
+											 gradmean() * dG( xi / ddata.binsize ).t() + 
+											 dG( xi / ddata.binsize ) * gradmean().t() + 
+											 mean() * ddG( xi / ddata.binsize ) );
+};
+
+arma::cube Hawkes::hessf_( arma::vec xi ) {
+	arma::cube hess( param.n_elem, param.n_elem, xi.n_elem );
+	
+	arma::vec term0 = sinc_( xi / 2.0 );
+	arma::vec term1 = ddata.binsize * term0 % term0;
+	
+	double m = mean();
+	arma::vec dm = gradmean();
+	arma::mat ddm = hessmean();
+	arma::vec Gxb = G_( xi / ddata.binsize );
+	arma::mat gradG = dG_( xi / ddata.binsize );
+	arma::cube hessG = ddG_( xi / ddata.binsize );
+	
+	arma::vec tube(xi.n_elem);
+	for (arma::uword i = 0; i < param.n_elem; i++) {
+		for (arma::uword j = 0; j < param.n_elem; j++) {
+			tube = hessG(arma::span(i),arma::span(j), arma::span::all);
+			hess.tube(i, j) = term1 % ( ddm(i, j) * Gxb + dm(i) * gradG.col(j) + dm(j) * gradG.col(i) + m * tube );
+		}
+	}
+	return hess;
+};
+
+arma::vec Hawkes::gradf1( double xi, int trunc ) {
+	arma::vec omega = xi + 2.0 * arma::datum::pi * arma::regspace<arma::vec>(-trunc, trunc);
+	return arma::trans( arma::sum( gradf_(omega), 0 ) );
+};
+
+arma::mat Hawkes::gradf1_( arma::vec xi, int trunc ) {
+	arma::vec omega_ = 2.0 * arma::datum::pi * arma::regspace<arma::vec>(-trunc, trunc);
+	arma::mat y(xi.n_elem, param.n_elem);
+	for (arma::uword k = 0; k < xi.n_elem; k++) {
+		y.row(k) = arma::sum( gradf_(xi(k) + omega_), 0 );
+	}
+	return y;
+};
+
+arma::mat Hawkes::hessf1( double xi, int trunc ) {
+	arma::vec omega = xi + 2.0 * arma::datum::pi * arma::regspace<arma::vec>(-trunc, trunc);
+	return arma::sum( hessf_(omega), 2 );
+};
+
+arma::cube Hawkes::hessf1_( arma::vec xi, int trunc ) {
+	arma::vec omega_ = 2.0 * arma::datum::pi * arma::regspace<arma::vec>(-trunc, trunc);
+	arma::cube y(param.n_elem, param.n_elem, xi.n_elem);
+	for (arma::uword k = 0; k < xi.n_elem; k++) {
+		y.slice(k) = arma::sum( hessf_(xi(k) + omega_), 2 );
+	}
+	return y;
+};
 
 double Hawkes::wLik( arma::vec& I, int trunc ) {
 	arma::uword n = I.n_elem;
@@ -123,6 +200,21 @@ double Hawkes::wLik( arma::vec& I, int trunc ) {
 /////////////////////////////////////////////////////////////// EXPHAWKES ///////////////////////////////////////////////////////////////
 double ExpHawkes::mean() {
 	return param(0) / ( 1.0 - param(1) );
+};
+
+arma::vec ExpHawkes::gradmean() {
+	double denom = 1.0 / ( 1.0 - param(1) );
+	arma::vec grad = { denom, param(0) * denom * denom, 0 };
+	return grad;
+};
+
+arma::mat ExpHawkes::hessmean() {
+	double denom = 1.0 / ( 1.0 - param(1) );
+	double denom2 = denom * denom;
+	arma::mat hess = { {   0.0,                  denom2, 0.0},
+					   {denom2, 2*param(0)*denom2*denom, 0.0},
+					   {   0.0,                     0.0, 0.0} };
+					   return hess;
 };
 
 // Virtual methods for time- and frequency-domain excitation functions
@@ -358,6 +450,14 @@ RCPP_MODULE(HawkesModule) {
 		.method("dG_", &Hawkes::dG_)
 		.method("ddG", &Hawkes::ddG)
 		.method("ddG_", &Hawkes::ddG_)
+		.method("gradf", &Hawkes::gradf)
+		.method("gradf_", &Hawkes::gradf_)
+		.method("hessf", &Hawkes::hessf)
+		.method("hessf_", &Hawkes::hessf_)
+		.method("gradf1", &Hawkes::gradf1)
+		.method("gradf1_", &Hawkes::gradf1_)
+		.method("hessf1", &Hawkes::hessf1)
+		.method("hessf1_", &Hawkes::hessf1_)
 		.method("wLik", &Hawkes::wLik)
 		.property("param", &Hawkes::getParam, &Hawkes::setParam)
 		.property("data", &Hawkes::getData, &Hawkes::setData)
@@ -370,6 +470,9 @@ RCPP_MODULE(HawkesModule) {
 	class_<ExpHawkes>("ExpHawkes")
 		.derives<Hawkes>("Hawkes")
 		.default_constructor() // This exposes the default constructor
+		.method("mean", &ExpHawkes::mean)
+		.method("gradmean", &ExpHawkes::gradmean)
+		.method("hessmean", &ExpHawkes::hessmean)
 		.method("h", &ExpHawkes::h)
 		.method("h_", &ExpHawkes::h_)
 		.method("H", &ExpHawkes::H)
