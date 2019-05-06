@@ -64,6 +64,7 @@ class Hawkes {
 		
 		// Whittle likelihood estimation methods
 		double wLik( arma::vec& I, int trunc );
+		arma::mat wHess( arma::vec& I, int trunc );
 		
 		// Get and set methods
 		void setParam( arma::vec param_ ) {

@@ -197,6 +197,21 @@ double Hawkes::wLik( arma::vec& I, int trunc ) {
 	return arma::sum( arma::log(spectrum) + I / spectrum );
 };
 
+arma::mat Hawkes::wHess( arma::vec& I, int trunc ) {
+	arma::uword n = I.n_elem;
+	double inv_pi = 1.0 / arma::datum::pi;
+	arma::vec omega = 2.0 * arma::datum::pi * arma::regspace<arma::vec>(0, n-1) / (double)n;
+	
+	arma::mat Gamma( param.n_elem, param.n_elem );
+	
+	// arma::mat Gamma = 0.25 * inv_pi * arma::sum( ( I - gammaf1_( omega, trunc ) )  );  
+	
+	// return arma::zeros<arma::mat>( param.n_elem, param.n_elem );
+	arma::vec a = {1.0,2.0};
+	arma::cube b = arma::ones<arma::cube>(3, 3, 4);
+	return arma::kron(a, b);
+};
+
 /////////////////////////////////////////////////////////////// EXPHAWKES ///////////////////////////////////////////////////////////////
 double ExpHawkes::mean() {
 	return param(0) / ( 1.0 - param(1) );
@@ -459,6 +474,7 @@ RCPP_MODULE(HawkesModule) {
 		.method("hessf1", &Hawkes::hessf1)
 		.method("hessf1_", &Hawkes::hessf1_)
 		.method("wLik", &Hawkes::wLik)
+		.method("wHess", &Hawkes::wHess)
 		.property("param", &Hawkes::getParam, &Hawkes::setParam)
 		.property("data", &Hawkes::getData, &Hawkes::setData)
 		.property("ddata", &Hawkes::getDData, &Hawkes::setDData)
