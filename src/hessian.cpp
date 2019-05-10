@@ -139,6 +139,25 @@ arma::cube Hawkes::hessf1_( arma::vec xi, int trunc ) {
 	return y;
 };
 
+arma::mat Hawkes::wHess( arma::vec& I, int trunc ) {
+	arma::uword n = I.n_elem;
+	double inv_pi = 1.0 / arma::datum::pi;
+	arma::vec omega = 2.0 * arma::datum::pi * arma::regspace<arma::vec>(0, n-1) / (double)n;
+	
+	arma::vec f = gammaf1_( omega, trunc );
+	arma::mat df = gradf1_( omega, trunc );
+	arma::cube ddf = hessf1_( omega, trunc );
+	arma::vec inv_f = 1.0 / f;
+	
+	arma::mat Gamma = arma::zeros<arma::mat>( param.n_elem, param.n_elem );
+	for (arma::uword k = 0; k < n; k++) {
+		Gamma += inv_f(k) * inv_f(k) * df.row(k).t() * df.row(k);
+	}
+	Gamma *= .25 * inv_pi / n;
+	
+	return Gamma;
+};
+
 /////////////////////////////////////////////////////////////// EXPHAWKES ///////////////////////////////////////////////////////////////
 arma::cx_vec ExpHawkes::dH( double xi ) {
 	arma::cx_vec grad = arma::zeros<arma::cx_vec>( param.n_elem );

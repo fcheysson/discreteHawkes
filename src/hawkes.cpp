@@ -43,27 +43,6 @@ double Hawkes::wLik( arma::vec& I, int trunc ) {
 	return arma::sum( arma::log(spectrum) + I / spectrum );
 };
 
-arma::mat Hawkes::wHess( arma::vec& I, int trunc ) {
-	arma::uword n = I.n_elem;
-	double inv_pi = 1.0 / arma::datum::pi;
-	arma::vec omega = 2.0 * arma::datum::pi * arma::regspace<arma::vec>(0, n-1) / (double)n;
-	
-	arma::vec f = gammaf1_( omega, trunc );
-	arma::mat df = gradf1_( omega, trunc );
-	arma::cube ddf = hessf1_( omega, trunc );
-	
-	arma::rowvec dlogf( param.n_elem );
-	
-	arma::mat Gamma = arma::zeros<arma::mat>( param.n_elem, param.n_elem );
-	for (arma::uword k = 0; k < n; k++) {
-		dlogf = df.row(k) / f(k);
-		Gamma += ( I(k) - f(k) ) * arma::inv( ddf.slice(k) ) + dlogf.t() * dlogf;
-	}
-	Gamma *= .25 * inv_pi / n;
-	
-	return Gamma;
-};
-
 /////////////////////////////////////////////////////////////// EXPHAWKES ///////////////////////////////////////////////////////////////
 double ExpHawkes::mean() {
 	return param(0) / ( 1.0 - param(1) );
