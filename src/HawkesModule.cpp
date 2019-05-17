@@ -37,8 +37,8 @@ RCPP_MODULE(HawkesModule) {
 		.derives<Hawkes>("Hawkes")
 		.default_constructor() // This exposes the default constructor
 		.method("mean", &ExpHawkes::mean)
-		.method("gradmean", &ExpHawkes::gradmean)
-		.method("hessmean", &ExpHawkes::hessmean)
+		.method("dmean", &ExpHawkes::dmean)
+		.method("ddmean", &ExpHawkes::ddmean)
 		.method("h", &ExpHawkes::h)
 		.method("h_", &ExpHawkes::h_)
 		.method("H", &ExpHawkes::H)

@@ -48,21 +48,6 @@ double ExpHawkes::mean() {
 	return param(0) / ( 1.0 - param(1) );
 };
 
-arma::vec ExpHawkes::gradmean() {
-	double denom = 1.0 / ( 1.0 - param(1) );
-	arma::vec grad = { denom, param(0) * denom * denom, 0 };
-	return grad;
-};
-
-arma::mat ExpHawkes::hessmean() {
-	double denom = 1.0 / ( 1.0 - param(1) );
-	double denom2 = denom * denom;
-	arma::mat hess = { {   0.0,                  denom2, 0.0},
-					   {denom2, 2*param(0)*denom2*denom, 0.0},
-					   {   0.0,                     0.0, 0.0} };
-					   return hess;
-};
-
 // Virtual methods for time- and frequency-domain excitation functions
 double ExpHawkes::h( double x ) {
 	return param(1) * param(2) * exp( - param(2) * x );

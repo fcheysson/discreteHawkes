@@ -23,8 +23,8 @@ class Hawkes {
 		virtual ~Hawkes() {};
 		
 		virtual double mean() { return 0.0; };
-		virtual arma::vec gradmean() { return arma::zeros<arma::vec>(param.n_elem); };
-		virtual arma::mat hessmean() { return arma::zeros<arma::mat>(param.n_elem, param.n_elem); };
+		virtual arma::vec dmean() { return arma::zeros<arma::vec>(param.n_elem); };
+		virtual arma::mat ddmean() { return arma::zeros<arma::mat>(param.n_elem, param.n_elem); };
 		
 		// Virtual methods for time- and frequency-domain excitation functions
 		virtual double h( double x ) { return 0.0; };
@@ -64,7 +64,7 @@ class Hawkes {
 		
 		// Whittle likelihood estimation methods
 		double wLik( arma::vec& I, int trunc );
-		arma::cx_mat wHess( arma::cx_vec& dft, int trunc );
+		arma::mat wHess( arma::cx_vec& dft, int trunc );
 		
 		// Get and set methods
 		void setParam( arma::vec param_ ) {
@@ -121,8 +121,8 @@ class Hawkes {
 class ExpHawkes: public Hawkes {
 	public:
 		double mean();
-		arma::vec gradmean();
-		arma::mat hessmean();
+		arma::vec dmean();
+		arma::mat ddmean();
 		
 		// Methods for time- and frequency-domain excitation functions
 		double h( double x );
