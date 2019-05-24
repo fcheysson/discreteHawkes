@@ -18,6 +18,6 @@ arma::vec sinc_( arma::vec x ) {
 
 double HT( double x, double T ) {
 	double T4 = std::pow( T, 0.25 );
-	if ( abs(T4) > arma::datum::pi ) return 0.0;
+	if ( x*abs(T4) > arma::datum::pi ) return 0.0;
 	else return 0.5 * T4 / arma::datum::pi;
 };

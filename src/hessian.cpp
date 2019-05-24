@@ -140,7 +140,7 @@ arma::cube Hawkes::hessf1_( arma::vec xi, int trunc ) {
 	return y;
 };
 
-arma::mat Hawkes::wHess( arma::cx_vec& dft, int trunc ) {
+arma::cx_mat Hawkes::wHess( arma::cx_vec& dft, int trunc ) {
 	arma::uword n = dft.n_elem;
 	double inv_pi = 1.0 / arma::datum::pi;
 	double two_pi_over_n = 2 * arma::datum::pi / n;
@@ -159,31 +159,35 @@ arma::mat Hawkes::wHess( arma::cx_vec& dft, int trunc ) {
 		Gamma += dlogf.row(k).t() * dlogf.row(k);
 	}
 	// Gamma *= .25 * inv_pi / n; // renormalisation non nécessaire ici, car non introduite dans wLik
-	/*
-	arma::cx_mat temp1 = arma::zeros<arma::cx_mat>( param.n_elem, param.n_elem );
+	
+	arma::cx_mat term1 = arma::zeros<arma::cx_mat>( param.n_elem, param.n_elem );
 	for (arma::uword j1 = 0; j1 < n; j1++) {
 		for (arma::uword j2 = 0; j2 < n; j2++) {
 			for (arma::uword j3 = 0; j3 < n; j3++) {
-				temp1 += HT( two_pi_over_n * (double)(j2+j3), n ) * dft(j1) * dft(j2) * dft(j3) * dft((j1+j2+j3)%n) * arma::conv_to<arma::cx_mat>::from( dlogf.row(j1).t() * dlogf.row(j2) );
+				term1 += HT( two_pi_over_n * (double)(j2+j3), n ) * dft(j1) * dft(j2) * dft(j3) * dft(-(j1+j2+j3)%n) * arma::conv_to<arma::cx_mat>::from( dlogf.row(j1).t() * dlogf.row(j2) );
 			}
 		}
 	}
-	temp1 /= std::pow( n, 4 );
+	term1 /= std::pow( n, 4 );
 	
-	// Second term is 0 because spectral density function is uneven => dlogf is uneven
+	arma::mat term2 = arma::zeros<arma::mat>( param.n_elem, param.n_elem );
+	double temp;
+	for (arma::uword j = 0; j < n; j++) {
+		temp = std::norm( dft(j) );
+		term2 += dlogf.row(j).t() * dlogf.row(j) * temp * temp;		// dlogf symmetric
+	}
+	term2 *= .5 * inv_pi / std::pow( n, 3 );
 	
-	arma::mat temp3 = arma::zeros<arma::mat>( param.n_elem, param.n_elem );
+	arma::mat term3 = arma::zeros<arma::mat>( param.n_elem, param.n_elem );
 	for (arma::uword j1 = 0; j1 < n; j1++) {
 		for (arma::uword j2 = 0; j2 < n; j2++) {
-			temp3 += std::norm( dft(j1) * dft(j2) ) * dlogf.row(j1).t() * dlogf.row(j2);
+			term3 += std::norm( dft(j1) * dft(j2) ) * dlogf.row(j1).t() * dlogf.row(j2);
 		}
 	}
-	temp3 *= 0.5 * inv_pi / std::pow( n, 3.75 );
+	term3 *= 0.5 * inv_pi / std::pow( n, 3.75 );
 	
-	arma::cx_mat W = .125 * inv_pi * (temp1 - arma::conv_to<arma::cx_mat>::from(temp3));
-	return W;
-	*/
-	return Gamma;
+	arma::cx_mat W = .5 * (term1 - arma::conv_to<arma::cx_mat>::from(term2 + term3));
+	return term1;
 };
 
 /////////////////////////////////////////////////////////////// EXPHAWKES ///////////////////////////////////////////////////////////////
