@@ -142,7 +142,8 @@ arma::cube Hawkes::hessf1_( arma::vec xi, int trunc ) {
 
 arma::cx_mat Hawkes::wHess( arma::cx_vec& dft, int trunc ) {
 	arma::uword n = dft.n_elem;
-	double inv_pi = 1.0 / arma::datum::pi;
+	arma::sword floor_half_n = floor( .5 * (double)n );
+	arma::sword ceil_half_n = ceil( .5 * (double)n );
 	double two_pi_over_n = 2 * arma::datum::pi / n;
 	arma::vec omega = 2.0 * arma::datum::pi * arma::regspace<arma::vec>(0, n-1) / (double)n;
 	
@@ -159,17 +160,16 @@ arma::cx_mat Hawkes::wHess( arma::cx_vec& dft, int trunc ) {
 		Gamma += dlogf.row(k).t() * dlogf.row(k);
 	}
 	// Gamma *= .25 * inv_pi / n; // renormalisation non nécessaire ici, car non introduite dans wLik
-	
-	arma::cx_mat term1 = arma::zeros<arma::cx_mat>( param.n_elem, param.n_elem );
-	for (arma::uword j1 = 0; j1 < n; j1++) {
-		for (arma::uword j2 = 0; j2 < n; j2++) {
-			for (arma::uword j3 = 0; j3 < n; j3++) {
-				term1 += HT( two_pi_over_n * (double)(j2+j3), n ) * dft(j1) * dft(j2) * dft(j3) * dft(-(j1+j2+j3)%n) * arma::conv_to<arma::cx_mat>::from( dlogf.row(j1).t() * dlogf.row(j2) );
+	arma::cx_mat term1 = arma::zeros<arma::cx_mat>( param.n_elem, param.n_elem ); 
+	for (arma::sword j1 = - ceil_half_n + 1; j1 < floor_half_n + 1; j1++) {
+		for (arma::sword j2 = - ceil_half_n + 1; j2 < floor_half_n + 1; j2++) {
+			for (arma::sword j3 = - ceil_half_n + 1; j3 < floor_half_n + 1; j3++) {
+				term1 += HT( two_pi_over_n * (double)(j2+j3), n ) * dft( modulus(j1, n) ) * dft( modulus(j2, n) ) * dft( modulus(j3, n) ) * dft( modulus(-(j1+j2+j3), n) ) * arma::conv_to<arma::cx_mat>::from( dlogf.row( modulus(j1, n) ).t() * dlogf.row( modulus(j2, n) ) );
 			}
 		}
 	}
 	term1 /= std::pow( n, 4 );
-	
+
 	arma::mat term2 = arma::zeros<arma::mat>( param.n_elem, param.n_elem );
 	double temp;
 	for (arma::uword j = 0; j < n; j++) {
