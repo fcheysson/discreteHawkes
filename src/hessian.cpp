@@ -140,7 +140,7 @@ arma::cube Hawkes::hessf1_( arma::vec xi, int trunc ) {
 	return y;
 };
 
-arma::cx_mat Hawkes::wHess( arma::cx_vec& dft, int trunc ) {
+arma::mat Hawkes::wHess( arma::cx_vec& dft, int trunc ) {
 	arma::uword n = dft.n_elem;
 	arma::sword floor_half_n = floor( .5 * (double)n );
 	arma::sword ceil_half_n = ceil( .5 * (double)n );
@@ -160,6 +160,7 @@ arma::cx_mat Hawkes::wHess( arma::cx_vec& dft, int trunc ) {
 		Gamma += dlogf.row(k).t() * dlogf.row(k);
 	}
 	// Gamma *= .25 * inv_pi / n; // renormalisation non nécessaire ici, car non introduite dans wLik
+	
 	arma::cx_mat term1 = arma::zeros<arma::cx_mat>( param.n_elem, param.n_elem ); 
 	for (arma::sword j1 = - ceil_half_n + 1; j1 < floor_half_n + 1; j1++) {
 		for (arma::sword j2 = - ceil_half_n + 1; j2 < floor_half_n + 1; j2++) {
@@ -186,8 +187,8 @@ arma::cx_mat Hawkes::wHess( arma::cx_vec& dft, int trunc ) {
 	}
 	term3 *= 0.5 * inv_pi / std::pow( n, 3.75 );
 	
-	arma::cx_mat W = .5 * (term1 - arma::conv_to<arma::cx_mat>::from(term2 + term3));
-	return term1;
+	arma::mat W = .5 * (arma::real(term1) - term2 - term3);
+	return W;
 };
 
 /////////////////////////////////////////////////////////////// EXPHAWKES ///////////////////////////////////////////////////////////////
