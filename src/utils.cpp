@@ -28,5 +28,6 @@ arma::uword modulus( arma::sword a, arma::uword b ) {
 double HT( double x, double T ) {
 	double T4 = std::pow( T, 0.25 );
 	if ( x*abs(T4) > arma::datum::pi ) return 0.0;
-	else return 0.5 * T4 * inv_pi;
+	else return T4 * inv_pi * ( 1 - T4 * x * inv_pi);
+	//else return 0.5 * T4 * inv_pi;
 };

@@ -159,6 +159,7 @@ arma::mat Hawkes::wHess( arma::cx_vec& dft, int trunc ) {
 	for (arma::uword k = 0; k < n; k++) {
 		Gamma += dlogf.row(k).t() * dlogf.row(k);
 	}
+	arma::mat inv_Gamma = arma::inv_sympd( Gamma );
 	// Gamma *= .25 * inv_pi / n; // renormalisation non nécessaire ici, car non introduite dans wLik
 	
 	arma::cx_mat term1 = arma::zeros<arma::cx_mat>( param.n_elem, param.n_elem ); 
@@ -188,6 +189,7 @@ arma::mat Hawkes::wHess( arma::cx_vec& dft, int trunc ) {
 	term3 *= 0.5 * inv_pi / std::pow( n, 3.75 );
 	
 	arma::mat W = .5 * (arma::real(term1) - term2 - term3);
+	
 	return W;
 };
 

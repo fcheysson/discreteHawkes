@@ -4,7 +4,26 @@
 
 # Hawkes process by thinning (Ogata's modified thinning algorithm)
 
+#' Simulation of a Hawkes process
+#' 
+#' Simulates a Hawkes process via Ogata's modified thinning algorithm on [0,T].
+#' 
+#' @param T Right bound on time.
+#' @param lambda Baseline intensity.
+#' @param alpha Parameter for the amplitude of the spike.
+#' @param beta Parameter for the speed of exponential decay.
+#' @param lambda0 (Optional) Initial value of the conditional intensity.
+#'
+#' @return A S3 object of class Hawkes containing a vector ($p) of simulated values,
+#' and all other objects used for the simulation.
+#' 
 #' @export
+#'
+#' @examples
+#' # Simulate an exponential Hawkes process with baseline intensity 1 and 
+#' # excitation function 1*exp(-2t)
+#' x <- hawkes(10, 1, 1, 2)
+#' plot(x)
 hawkes <- function(T, lambda, alpha, beta, lambda0=NULL) UseMethod("hawkes")
 
 #' @export
@@ -70,7 +89,22 @@ hawkes.default <- function(T, lambda, alpha, beta, lambda0=NULL) {
 	return( sim )
 }
 
+#' Plot of a simulated Hawkes process
+#' 
+#' Plots a simulated Hawkes process, highlighting the steps used in Ogata's thinning algorithm.
+#' 
+#' @param hawkes A simulated Hawkes process.
+#' @param precision (default = 1e3) Number of points to plot.
+#'
+#' @return None
+#' 
 #' @export
+#'
+#' @examples
+#' # Simulate an exponential Hawkes process with baseline intensity 1 and 
+#' # excitation function 1*exp(-2t)
+#' x <- hawkes(10, 1, 1, 2)
+#' plot(x)
 plot.hawkes <- function(hawkes, precision=1e3, ...) {
 	# Conditional intensity
 	matplot(z <- seq(0, hawkes$T, by=hawkes$T / precision), 
@@ -100,7 +134,23 @@ plot.hawkes <- function(hawkes, precision=1e3, ...) {
 #' @export
 intensity <- function(object, t) UseMethod("intensity")
 
+#' Intensity of a simulated Hawkes process
+#' 
+#' Outputs the intensity of a simulated Hawkes process.
+#' 
+#' @param hawkes A simulated Hawkes process.
+#' @param t A numeric or vector.
+#'
+#' @return The intensity at time t.
+#' 
 #' @export
+#'
+#' @examples
+#' # Simulate an exponential Hawkes process with baseline intensity 1 and 
+#' # excitation function 1*exp(-2t)
+#' x <- hawkes(10, 1, 1, 2)
+#' plot(x)
+#' intensity(x, 0:10)
 intensity.hawkes <- function(hawkes, t) {
 	# If outside of bounds, return error
 	if (any(t < 0) || any(t > hawkes$T)) 
@@ -122,7 +172,23 @@ intensity.hawkes <- function(hawkes, t) {
 #' @export
 compensator <- function(object, t, ...) UseMethod("compensator")
 
+#' Compensator of a simulated Hawkes process
+#' 
+#' Outputs the compensator (integrated intensity) of a simulated Hawkes process.
+#' 
+#' @param hawkes A simulated Hawkes process.
+#' @param t A numeric or vector.
+#'
+#' @return The compensator at time t.
+#' 
 #' @export
+#'
+#' @examples
+#' # Simulate an exponential Hawkes process with baseline intensity 1 and 
+#' # excitation function 1*exp(-2t)
+#' x <- hawkes(10, 1, 1, 2)
+#' plot(x)
+#' compensator(x, 0:10)
 compensator.hawkes<- function(hawkes, t, ...) {
 	# If outside of bounds, return error
 	if (any(t < 0) || any(t > hawkes$T)) 
@@ -142,7 +208,26 @@ compensator.hawkes<- function(hawkes, t, ...) {
 	return( int )
 }
 
+#' Residuals of a simulated Hawkes process
+#' 
+#' Outputs the residuals (values of the compensator at the times of arrival) of a simulated Hawkes process.
+#' Useful function for diagnosis through the random time change theorem: the residuals should follow
+#' a unit rate Poisson process.
+#' 
+#' @param hawkes A simulated Hawkes process.
+#'
+#' @return The intensity at time t.
+#' 
 #' @export
+#'
+#' @examples
+#' # Simulate an exponential Hawkes process with baseline intensity 1 and 
+#' # excitation function 1*exp(-2t)
+#' x <- hawkes(10, 1, 1, 2)
+#' plot(x)
+#' z = residuals(x)
+#' plot(z)
+#' abline(0, 1)
 residuals.hawkes <- function(hawkes) {
 	return( hawkes$lambda * hawkes$p + (hawkes$lambda0 - hawkes$lambda) / hawkes$beta +
 		hawkes$alpha / hawkes$beta * (1:hawkes$n - 1 - hawkes$A) )

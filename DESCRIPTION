@@ -11,5 +11,7 @@ Depends: Rcpp (>= 0.12.10), nloptr
 Imports: expint
 LinkingTo: Rcpp, RcppArmadillo, expint
 RcppModules: HawkesModule
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
 Encoding: UTF-8
+Suggests: 
+    testthat

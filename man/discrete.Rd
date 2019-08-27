@@ -4,14 +4,14 @@
 \alias{discrete}
 \title{discrete}
 \usage{
-discrete(hawkes, length = NULL, binSize = NULL)
+discrete(hawkes, length = NULL, binsize = NULL)
 }
 \arguments{
 \item{hawkes}{}
 
 \item{length}{}
 
-\item{binSize}{}
+\item{binsize}{}
 }
 \description{
 discrete
