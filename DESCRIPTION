@@ -14,4 +14,4 @@ RcppModules: HawkesModule
 RoxygenNote: 6.1.1
 Encoding: UTF-8
 Suggests: 
-    testthat
+    testthat, pkgdown
